@@ -12,36 +12,56 @@
 </template>
 
 <script setup>
-import { ref, onUnmounted } from "vue"
-import { db, auth } from "@/firebaseConfig"
+import { ref, watch, onUnmounted } from "vue"
+import { db } from "@/firebaseConfig"
 import { collection, query, orderBy, onSnapshot } from "firebase/firestore"
-import { onAuthStateChanged } from "firebase/auth"
+import { useAuth } from "@/composables/useAuth.js"
 
+const { user, isReady } = useAuth()
 const notes = ref([])
 let unsubscribe = null
 
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    const notesRef = collection(db, "users", user.uid, "notes")
-    const q = query(notesRef, orderBy("createdAt", "desc"))
-
-    unsubscribe = onSnapshot(q, (querySnapshot) => {
-      notes.value = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }))
-    })
-  } else {
-    notes.value = []
+watch(
+  () => isReady.value && user.value?.uid,
+  (shouldWatch, _, onCleanup) => {
+    // 前の監視を解除
     if (unsubscribe) {
-      unsubscribe() // ユーザー切り替え時に解除
+      unsubscribe()
+      unsubscribe = null
     }
-  }
-})
+
+    // 認証状態が有効なときのみ監視開始
+    if (shouldWatch) {
+      const q = query(
+        collection(db, 'users', user.value.uid, 'notes'),
+        orderBy('createdAt', 'desc')
+      )
+
+      unsubscribe = onSnapshot(q, (querySnapshot) => {
+        notes.value = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+      })
+
+      // Vue の watch 終了時に監視解除
+      onCleanup(() => {
+        if (unsubscribe) {
+          unsubscribe()
+          unsubscribe = null
+        }
+      })
+    } else {
+      notes.value = []
+    }
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => {
   if (unsubscribe) {
     unsubscribe() // メモリリークを防ぐ
+    unsubscribe = null
   }
 })
 </script>

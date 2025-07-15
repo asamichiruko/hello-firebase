@@ -1,26 +1,20 @@
 <script setup>
-import { ref, onMounted } from "vue"
-import { auth } from "@/firebaseConfig"
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "firebase/auth"
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { useAuth } from "@/composables/useAuth.js"
 
-const user = ref(null)
+const { user } = useAuth()
 
-const login = () => {
-  const provider = new GoogleAuthProvider()
-  signInWithPopup(auth, provider)
-    .then((result) => {
-      user.value = result.user
-    })
-    .catch((error) => {
-      console.error("ログイン失敗: ", error)
-    })
+const login = async () => {
+  try {
+    const auth = getAuth()
+    const provider = new GoogleAuthProvider()
+    await signInWithPopup(auth, provider)
+    alert("ログインしました")
+  } catch(error) {
+    console.error("ログインに失敗しました: ", error)
+    alert("ログインに失敗しました")
+  }
 }
-
-onMounted(() => {
-  onAuthStateChanged(auth, (u) => {
-    user.value = u
-  })
-})
 </script>
 
 <template>
