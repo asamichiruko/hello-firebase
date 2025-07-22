@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h2>保存されたメモ一覧</h2>
     <ul>
       <li v-for="note in notes" :key="note.id">
         {{ note.content }} <br />
@@ -12,10 +11,10 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from "vue"
-import { db } from "@/firebaseConfig"
-import { collection, query, orderBy, onSnapshot } from "firebase/firestore"
 import { useAuth } from "@/composables/useAuth.js"
+import { db } from "@/firebaseConfig"
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore"
+import { onUnmounted, ref, watch } from "vue"
 
 const { user, isReady } = useAuth()
 const notes = ref([])
@@ -33,12 +32,12 @@ watch(
     // 認証状態が有効なときのみ監視開始
     if (shouldWatch) {
       const q = query(
-        collection(db, 'users', user.value.uid, 'notes'),
-        orderBy('createdAt', 'desc')
+        collection(db, "users", user.value.uid, "notes"),
+        orderBy("createdAt", "desc"),
       )
 
       unsubscribe = onSnapshot(q, (querySnapshot) => {
-        notes.value = querySnapshot.docs.map(doc => ({
+        notes.value = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }))
@@ -55,7 +54,7 @@ watch(
       notes.value = []
     }
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 onUnmounted(() => {
