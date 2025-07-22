@@ -1,12 +1,12 @@
 <script setup>
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth"
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth"
 import { useAuth } from "@/composables/useAuth.js"
+import { auth } from "@/firebaseConfig.js"
 
 const { user } = useAuth()
 
 const login = async () => {
   try {
-    const auth = getAuth()
     const provider = new GoogleAuthProvider()
     await signInWithPopup(auth, provider)
     alert("ログインしました")
