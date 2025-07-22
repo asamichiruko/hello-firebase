@@ -5,13 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build:dev": "vite build",
+    "build:prod": "vite build --mode production",
     "preview": "vite preview",
     "test": "vitest run",
     "test:unit": "vitest",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/",
-    "deploy": "gh-pages -d dist"
+    "format": "prettier --write src/"
   },
   "dependencies": {
     "firebase": "^11.10.0",
